@@ -3,11 +3,19 @@
   (:require [ clojure.string :as string ])
   (:require [ media-mogul.library :as library ]))
 
-(def selected 4)
+(def selected 0)
 
 (defn setup []
   (smooth)
-  (frame-rate 5))
+  (frame-rate 60))
+
+(defn handle-input []
+  (if (and key-pressed? (= (raw-key) \j))
+    (def selected (+ selected 1)))
+
+  (if (and key-pressed? (= (raw-key) \k))
+    (def selected (- selected 1))
+  ))
 
 (defn clock-time []
   (string/join ":"
@@ -23,15 +31,16 @@
   (map #(text % 200 200) items))
 
 (defn draw-menu-item [ position item ]
-  (println position selected)
   (if (= position selected)
-    (color 255 0 0)
-    (color 0 0 0))
+    (fill 255 0 0)
+    (fill 255 255 255))
 
   (text item 20 (* (+ position 1) 30)))
 
 (defn draw []
   (background 000)
+
+  (handle-input)
 
   (dotimes [ i (count library/series-names) ]
     (draw-menu-item i (nth library/series-names i)))
