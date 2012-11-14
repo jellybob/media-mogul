@@ -24,3 +24,5 @@
     #".*\[(\d+)x(\d+)\].*?" ; Series Name [1x2] Episode Name
     #".*(\d+)x(\d+).*?" ; Series.Name.1x01.Episode.Name
   ])
+
+(defn -main [ & args ])

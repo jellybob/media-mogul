@@ -1,5 +1,10 @@
 (ns media-mogul.frontend
- (:gen-class))
+ (:gen-class)
+ (:use quil.core)
+ (:require [ media-mogul.frontend.view :as view ]))
 
-(defn -main [ & args ]
- (println "Boo!"))
+(defsketch frontend
+  :title "Media Mogul"
+  :setup view/setup
+  :draw view/draw
+  :size [800 600])
