@@ -39,11 +39,11 @@
   }))
 
 (defn sanitized-path [ path ]
-  (string/replace-first path media-path "")
-  )
+  (string/replace-first path media-path ""))
 
 (defn files-in-path [ base_path ]
-  (map #(file-details %) (file-seq (io/file base_path))))
+  (map #(file-details %)
+   (file-seq (io/file base_path))))
 
 (defn supported-file-type? [ file ]
   (contains? supported-files (file :extension)))
@@ -52,22 +52,27 @@
   (map #(re-matches % s) patterns))
 
 (defn blacklisted-path? [ path ]
-  (some #(not (nil? %)) (collect-matches blacklist-patterns path)))
+  (some #(not (nil? %))
+   (collect-matches blacklist-patterns path)))
 
 (defn find-media []
   "Find any files that are both valid file types and not blacklisted"
-  (filter #(and (supported-file-type? %) (not (blacklisted-path? (% :path)))) (files-in-path media-path)))
+  (filter #(and
+            (supported-file-type? %)
+            (not (blacklisted-path? (% :path))))
+   (files-in-path media-path)))
 
 (defn metadata [ file ]
   "Extract series and episode metadata from a file's path"
   (let [
+      path (sanitized-path (file :path))
       matches (collect-matches metadata-matchers (string/lower-case (file :filename)))
       valid-matches (filter #(not (nil? %)) matches)
       [ _ season episode ] (first valid-matches)
     ]
 
     (assoc file
-      :series (first (string/split (sanitized-path (file :path)) #"\/"))
+      :series (first (string/split path #"\/"))
       :season season
       :episode episode
     )))
