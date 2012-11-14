@@ -1,7 +1,7 @@
 (ns media-mogul.library
-  [ :require [ media-mogul.core :as config ] ]
-  [ :require [ clojure.java.io :as io ] ]
-  [ :require [ clojure.string :as string ] ])
+  ( :require [ media-mogul.core :as config ] )
+  ( :require [ clojure.java.io :as io ] )
+  ( :require [ clojure.string :as string ] ))
 
 (defn -file-extension [ path ]
   (last (string/split path #"\.")))
@@ -55,3 +55,6 @@
 
 (defn metadata []
   (map #(-metadata %) (-find-media)))
+
+(def series-names
+  (sort (distinct (map #(% :series) (metadata)))))

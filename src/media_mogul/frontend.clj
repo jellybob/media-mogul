@@ -7,4 +7,6 @@
   :title "Media Mogul"
   :setup view/setup
   :draw view/draw
-  :size [800 600])
+  :size [(screen-width) (screen-height)]
+  :renderer :opengl
+  :decor false)
