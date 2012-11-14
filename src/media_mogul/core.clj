@@ -2,16 +2,30 @@
   [ :require [ clojure.java.io :as io ] ]
   [ :require [ clojure.string :as string ] ])
 
+(def media-path
+ "The root to look in for media files"
+ "/Volumes/shared/TV/")
+
 (def supported-files
+ "File types to include in the media list"
   #{"mp4" "mkv" "avi"})
 
 (def blacklist-patterns
+  "Files matching these regexps will be excluded from the media list"
   [
     #".*/\..*" ; Hidden files and directories
     #".*\.sample.*" ; Samples
   ])
 
-(def media-path "/Volumes/shared/TV/")
+(def metadata-matchers
+  "Regexps that will be tried to extract a series and episode number from the filename"
+  [
+    #".*s(\d+)e(\d+).*" ; Series Name - s01e02 - Episode Name
+    #".*s(\d+)e(\d+).*" ; Series Name - s01_e02 - Episode Name
+    #".*\.s(\d+)e(\d+).*?" ; Series.Name-s01e02-Episode.Name
+    #".*\[(\d+)x(\d+)\].*?" ; Series Name [1x2] Episode Name
+    #".*(\d+)x(\d+).*?" ; Series.Name.1x01.Episode.Name
+  ])
 
 (defn file-extension [ path ]
   (last (string/split path #"\.")))
@@ -34,26 +48,20 @@
 (defn supported-file-type? [ file ]
   (contains? supported-files (file :extension)))
 
-(defn collect-matches? [ patterns s ]
+(defn collect-matches [ patterns s ]
   (map #(re-matches % s) patterns))
 
-(defn ignored-path? [ path ]
-  (some #(not (nil? %)) (collect-matches? blacklist-patterns path)))
+(defn blacklisted-path? [ path ]
+  (some #(not (nil? %)) (collect-matches blacklist-patterns path)))
 
 (defn find-media []
-  (filter #(and (supported-file-type? %) (not (ignored-path? (% :path)))) (files-in-path media-path)))
-
-(def metadata-matchers [
-  #".*s(\d+)e(\d+).*" ; Series Name - s01e02 - Episode Name
-  #".*s(\d+)e(\d+).*" ; Series Name - s01_e02 - Episode Name
-  #".*\.s(\d+)e(\d+).*?" ; Series.Name-s01e02-Episode.Name
-  #".*\[(\d+)x(\d+)\].*?" ; Series Name [1x2] Episode Name
-  #".*(\d+)x(\d+).*?" ; Series.Name.1x01.Episode.Name
-  ])
+  "Find any files that are both valid file types and not blacklisted"
+  (filter #(and (supported-file-type? %) (not (blacklisted-path? (% :path)))) (files-in-path media-path)))
 
 (defn metadata [ file ]
+  "Extract series and episode metadata from a file's path"
   (let [
-      matches (map #(re-matches % (string/lower-case (file :filename))) metadata-matchers)
+      matches (collect-matches metadata-matchers (string/lower-case (file :filename)))
       valid-matches (filter #(not (nil? %)) matches)
       [ _ season episode ] (first valid-matches)
     ]
