@@ -1,25 +1,29 @@
 (ns media-mogul.frontend
-  (:use [ clj-time.format :only (formatters unparse)]
-        [ clj-time.local :only (local-now) ]))
+  (:require [ media-mogul.frontend.main-menu ]))
 
-(import '(org.newdawn.slick BasicGame GameContainer Graphics SlickException AppGameContainer))
+(import
+  '(org.newdawn.slick AppGameContainer)
+  '(org.newdawn.slick.state StateBasedGame))
 
-(defn clock-time []
-  (unparse (formatters :hour-minute-second) (local-now)))
+(def graphics-options {
+  :width 1024
+  :height 768
+  :fullscreen false
+  })
 
-(def main-menu
-  (proxy [ BasicGame ] [ "Frontend" ]
-   (init [ container ])
+(def state-handler
+  (proxy [ StateBasedGame ] [ "Frontend" ]
+   (initStatesList [ container ]
+     (.addState this media-mogul.frontend.main-menu/state-proxy))))
 
-   (update [ container delta ])
-
-   (render [ container graphics ]
-    (.drawString graphics (clock-time) 30 (- 1024 150)))))
-
-(defn start [ options ]
-  (let [ menu (new AppGameContainer main-menu) ]
-   (.setDisplayMode menu
-    (get options :width 1024)
-    (get options :height 768)
-    (get options :fullscreen false))
-   (.start menu)))
+(defn start []
+  (let [ gui (new AppGameContainer state-handler) ]
+   (.setDisplayMode gui
+      (:width graphics-options)
+      (:height graphics-options)
+      (:fullscreen graphics-options))
+   (.setUpdateOnlyWhenVisible gui false)
+   (.setAlwaysRender gui true)
+   (.setTargetFrameRate gui 60)
+   (.start gui)
+   (gui)))
