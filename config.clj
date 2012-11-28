@@ -1,0 +1,1 @@
+{:display {:width 1024, :fullscreen false, :height 768, :show-fps false}}

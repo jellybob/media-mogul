@@ -1,10 +1,11 @@
 (ns media-mogul.frontend
   (:require [ media-mogul.frontend.main-menu ])
+  (:use [ media-mogul [ core :only [ config ] ] ])
   (:gen-class))
 
 (import '(org.newdawn.slick AppGameContainer BasicGame))
 
-(declare start state callback application-proxy set-view graphics-options)
+(declare start state callback application-proxy)
 
 (defn -main [ & args ]
   (future (start)))
@@ -19,28 +20,44 @@
  (let [ container (new AppGameContainer application-proxy) ]
    (doto container
      (.setDisplayMode
-        (:width graphics-options)
-        (:height graphics-options)
-        (:fullscreen graphics-options))
+        (:width @state)
+        (:height @state)
+        (:fullscreen @state))
      (.setUpdateOnlyWhenVisible false)
      (.setAlwaysRender true)
      (.setTargetFrameRate 60)
      (.start))))
 
-(defn set-view
-  " Defines the namespace to look for update and render functions to display
+(defn view
+  "Defines the namespace to look for update and render functions to display
   the current state of the GUI. See media-mogul.frontend.example for an idea
   of what that looks like"
   [ view-ns ]
 
   (dosync
-    (alter state conj { :view-ns view-ns })))
+    (alter state conj { :view-ns view-ns }))
 
-(def graphics-options {
-  :width 1024
-  :height 768
-  :fullscreen false
-  })
+  view-ns)
+
+(defn display-mode
+  "Updates the desired display mode, which will be put into effect on the
+  next run of the update loop."
+  [ width height fullscreen ]
+  (dosync
+    (alter config update-in [ :display ] conj {
+      :width width
+      :height height
+      :fullscreen fullscreen }))
+
+  { :width width :height height :fullscreen fullscreen })
+
+(defn show-fps
+  "Specifies whether the FPS counter should be displayed."
+  [ fps ]
+  (dosync
+    (alter config update-in [ :display ] conj { :show-fps fps }))
+
+  fps)
 
 (def ^{ :private true }
   application-proxy
@@ -49,14 +66,24 @@
     (render [ container graphics ]
       (callback 'render container graphics))
     (update [ container delta ]
-      (.setShowFPS container (:show-fps @state))
+      (doto container
+        (.setShowFPS (:show-fps @state))
+        (.setDisplayMode (:width @state) (:height @state) (:fullscreen @state)))
       (callback 'update container delta))))
+
+(add-watch config :config-changed (fn [ key config old-val new-val ]
+                                    (println new-val)
+                                    (dosync (alter state conj (:display new-val)))))
 
 (def
   ^{ :private true }
   state
-  (ref { :view-ns 'media-mogul.frontend.main-menu
-         :show-fps false }))
+  (ref (conj {
+         :view-ns 'media-mogul.frontend.main-menu
+         :show-fps false
+         :fullscreen false
+         :width 1024
+         :height 768 } (:display @config))))
 
 (defn
   ^{ :private true }

@@ -25,4 +25,14 @@
     #".*(\d+)x(\d+).*?" ; Series.Name.1x01.Episode.Name
   ])
 
-(defn -main [ & args ])
+(def config
+  "Application config as loaded from the config file."
+  (ref (load-file "config.clj")))
+
+(defn reload-configuration []
+  (dosync
+    (alter config conj (load-file "config.clj"))))
+
+(defn save-configuration [ path ]
+  (let [ config @config ]
+    (spit path config)))
