@@ -8,4 +8,4 @@
                  [org.lwjgl.lwjgl/lwjgl "2.8.4" ]
                  [org.clojars.jyaan/slick "247.1"]]
   :jvm-opts ["-Djava.library.path=./native"]
-  :main media-mogul.core)
+  :main media-mogul.frontend)

@@ -1,9 +1,13 @@
 (ns media-mogul.frontend
-  (:require [ media-mogul.frontend.main-menu ]))
+  (:require [ media-mogul.frontend.main-menu ])
+  (:gen-class))
 
 (import '(org.newdawn.slick AppGameContainer BasicGame))
 
-(declare state callback application-proxy set-view graphics-options)
+(declare start state callback application-proxy set-view graphics-options)
+
+(defn -main [ & args ]
+  (future (start)))
 
 (defn start
  "Starts the GUI using the display options set in graphics-options.
