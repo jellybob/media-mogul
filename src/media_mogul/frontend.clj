@@ -59,8 +59,7 @@
 
   fps)
 
-(def ^{ :private true }
-  application-proxy
+(def application-proxy
   (proxy [ BasicGame ] [ "Media Mogul" ]
     (init [ container ])
     (render [ container graphics ]
@@ -72,12 +71,9 @@
       (callback 'update container delta))))
 
 (add-watch config :config-changed (fn [ key config old-val new-val ]
-                                    (println new-val)
                                     (dosync (alter state conj (:display new-val)))))
 
-(def
-  ^{ :private true }
-  state
+(def state
   (ref (conj {
          :view-ns 'media-mogul.frontend.main-menu
          :show-fps false
@@ -85,8 +81,6 @@
          :width 1024
          :height 768 } (:display @config))))
 
-(defn
-  ^{ :private true }
-  callback [ name & args ]
+(defn- callback [ name & args ]
   (let [ callback-fn @(name (ns-publics (the-ns (:view-ns @state)))) ]
     (eval (apply callback-fn args))))

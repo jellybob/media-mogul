@@ -1,4 +1,5 @@
-(ns media-mogul.frontend.main-menu)
+(ns media-mogul.frontend.main-menu
+  ( :require [ media-mogul.library :as library ] ))
 
 (import
   '(org.newdawn.slick Color))
@@ -15,5 +16,11 @@
     (.setColor graphics (new Color @text-color))
     (.drawString graphics @message (- (.getWidth container) text-width 30) 30)))
 
+(defn- list-series [ graphics container ]
+ (let [ names (library/series-names)
+        indexes (range (count names))
+        text-height (.getHeight (.getFont graphics) "AbjQ") ]
+  (map #(.drawString graphics (nth names %) 30 (+ 30 (* % text-height))) indexes)))
+
 (defn render [ container graphics ]
-  (draw-message graphics container))
+  (list-series graphics container))
