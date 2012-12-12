@@ -1,1 +1,4 @@
-{:display {:width 1024, :fullscreen false, :height 768, :show-fps false}}
+{
+  :library (load-file "config/library.clj")
+  :display (load-file "config/display.clj")
+}
