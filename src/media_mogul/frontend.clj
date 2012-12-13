@@ -40,26 +40,6 @@
 
  view-identifier)
 
-(defn display-mode
- "Updates the desired display mode, which will be put into effect on the
- next run of the update loop."
- [ width height fullscreen ]
- (dosync
-  (alter config update-in [ :display ] conj {
-   :width width
-   :height height
-   :fullscreen fullscreen }))
-
- { :width width :height height :fullscreen fullscreen })
-
-(defn show-fps
- "Specifies whether the FPS counter should be displayed."
- [ fps ]
- (dosync
-  (alter config update-in [ :display ] conj { :show-fps fps }))
-
- fps)
-
 (add-watch config :config-changed (fn [ key config old-val new-val ]
                                    (dosync (alter state conj (:display new-val)))))
 
