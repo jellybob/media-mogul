@@ -1,7 +1,8 @@
 (ns media-mogul.frontend
-  (:require [ media-mogul.frontend.main-menu ])
-  (:use [ media-mogul [ core :only [ config ] ] ])
-  (:gen-class))
+  [ :use [ media-mogul.frontend [ callbacks :only [ updater renderer ] ] ] ]
+  [ :use [ media-mogul [ core :only [ config ] ] ] ]
+  [ :require media-mogul.frontend.main-menu ]
+  [ :gen-class ])
 
 (import '(org.newdawn.slick AppGameContainer BasicGame))
 
@@ -32,12 +33,12 @@
   "Defines the namespace to look for update and render functions to display
   the current state of the GUI. See media-mogul.frontend.example for an idea
   of what that looks like"
-  [ view-ns ]
+  [ view-identifier ]
 
   (dosync
-    (alter state conj { :view-ns view-ns }))
+    (alter state conj { :view view-identifier }))
 
-  view-ns)
+  view-identifier)
 
 (defn display-mode
   "Updates the desired display mode, which will be put into effect on the
@@ -59,28 +60,24 @@
 
   fps)
 
+(add-watch config :config-changed (fn [ key config old-val new-val ]
+                                    (dosync (alter state conj (:display new-val)))))
+
 (def application-proxy
   (proxy [ BasicGame ] [ "Media Mogul" ]
     (init [ container ])
     (render [ container graphics ]
-      (callback 'render container graphics))
+      (renderer @state container graphics))
     (update [ container delta ]
       (doto container
         (.setShowFPS (:show-fps @state))
         (.setDisplayMode (:width @state) (:height @state) (:fullscreen @state)))
-      (callback 'update container delta))))
-
-(add-watch config :config-changed (fn [ key config old-val new-val ]
-                                    (dosync (alter state conj (:display new-val)))))
+      (updater @state container delta))))
 
 (def state
   (ref (conj {
-         :view-ns 'media-mogul.frontend.main-menu
+         :view :default
          :show-fps false
          :fullscreen false
          :width 1024
          :height 768 } (:display @config))))
-
-(defn- callback [ name & args ]
-  (let [ callback-fn @(name (ns-publics (the-ns (:view-ns @state)))) ]
-    (eval (apply callback-fn args))))

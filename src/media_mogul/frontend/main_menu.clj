@@ -1,5 +1,6 @@
 (ns media-mogul.frontend.main-menu
-  ( :require [ media-mogul.library :as library ] ))
+  [ :use [ media-mogul.frontend [ callbacks :only [ updater renderer ] ] ] ]
+  [ :require [ media-mogul.library :as library ] ])
 
 (import
   '(org.newdawn.slick Color))
@@ -7,8 +8,9 @@
 (def text-color (atom (new Color 255 0 0)))
 (def message (atom "Hello world!"))
 
-(defn update [ container delta ]
-  (.setTitle container "Hello world"))
+(defmethod updater :main-menu
+  [ state container delta ]
+  (.setTitle container "Main menu"))
 
 (defn- draw-message [ graphics container ]
   (let [ current-message @message
@@ -22,5 +24,6 @@
         text-height (.getHeight (.getFont graphics) "AbjQ") ]
   (map #(.drawString graphics (nth names %) 30 (+ 30 (* % text-height))) indexes)))
 
-(defn render [ container graphics ]
-  (list-series graphics container))
+(defmethod renderer :main-menu
+  [ state container graphics ]
+  (draw-message graphics container))
