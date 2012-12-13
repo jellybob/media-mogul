@@ -1,15 +1,15 @@
 (ns media-mogul.frontend
-  [ :use [ media-mogul.frontend [ callbacks :only [ updater renderer ] ] ] ]
-  [ :use [ media-mogul [ core :only [ config ] ] ] ]
-  [ :require media-mogul.frontend.main-menu ]
-  [ :gen-class ])
+ [ :use [ media-mogul.frontend [ callbacks :only [ updater renderer ] ] ] ]
+ [ :use [ media-mogul [ core :only [ config ] ] ] ]
+ [ :require media-mogul.frontend.main-menu ]
+ [ :gen-class ])
 
 (import '(org.newdawn.slick AppGameContainer BasicGame))
 
 (declare start state callback application-proxy)
 
 (defn -main [ & args ]
-  (future (start)))
+ (future (start)))
 
 (defn start
  "Starts the GUI using the display options set in graphics-options.
@@ -19,65 +19,65 @@
  []
 
  (let [ container (new AppGameContainer application-proxy) ]
-   (doto container
-     (.setDisplayMode
-        (:width @state)
-        (:height @state)
-        (:fullscreen @state))
-     (.setUpdateOnlyWhenVisible false)
-     (.setAlwaysRender true)
-     (.setTargetFrameRate 60)
-     (.start))))
+  (doto container
+   (.setDisplayMode
+    (:width @state)
+    (:height @state)
+    (:fullscreen @state))
+   (.setUpdateOnlyWhenVisible false)
+   (.setAlwaysRender true)
+   (.setTargetFrameRate 60)
+   (.start))))
 
 (defn view
-  "Defines the namespace to look for update and render functions to display
-  the current state of the GUI. See media-mogul.frontend.example for an idea
-  of what that looks like"
-  [ view-identifier ]
+ "Defines the namespace to look for update and render functions to display
+ the current state of the GUI. See media-mogul.frontend.example for an idea
+ of what that looks like"
+ [ view-identifier ]
 
-  (dosync
-    (alter state conj { :view view-identifier }))
+ (dosync
+  (alter state conj { :view view-identifier }))
 
-  view-identifier)
+ view-identifier)
 
 (defn display-mode
-  "Updates the desired display mode, which will be put into effect on the
-  next run of the update loop."
-  [ width height fullscreen ]
-  (dosync
-    (alter config update-in [ :display ] conj {
-      :width width
-      :height height
-      :fullscreen fullscreen }))
+ "Updates the desired display mode, which will be put into effect on the
+ next run of the update loop."
+ [ width height fullscreen ]
+ (dosync
+  (alter config update-in [ :display ] conj {
+   :width width
+   :height height
+   :fullscreen fullscreen }))
 
-  { :width width :height height :fullscreen fullscreen })
+ { :width width :height height :fullscreen fullscreen })
 
 (defn show-fps
-  "Specifies whether the FPS counter should be displayed."
-  [ fps ]
-  (dosync
-    (alter config update-in [ :display ] conj { :show-fps fps }))
+ "Specifies whether the FPS counter should be displayed."
+ [ fps ]
+ (dosync
+  (alter config update-in [ :display ] conj { :show-fps fps }))
 
-  fps)
+ fps)
 
 (add-watch config :config-changed (fn [ key config old-val new-val ]
-                                    (dosync (alter state conj (:display new-val)))))
+                                   (dosync (alter state conj (:display new-val)))))
 
 (def application-proxy
-  (proxy [ BasicGame ] [ "Media Mogul" ]
-    (init [ container ])
-    (render [ container graphics ]
-      (renderer @state container graphics))
-    (update [ container delta ]
-      (doto container
-        (.setShowFPS (:show-fps @state))
-        (.setDisplayMode (:width @state) (:height @state) (:fullscreen @state)))
-      (updater @state container delta))))
+ (proxy [ BasicGame ] [ "Media Mogul" ]
+  (init [ container ])
+  (render [ container graphics ]
+   (renderer @state container graphics))
+  (update [ container delta ]
+   (doto container
+    (.setShowFPS (:show-fps @state))
+    (.setDisplayMode (:width @state) (:height @state) (:fullscreen @state)))
+   (updater @state container delta))))
 
 (def state
-  (ref (conj {
-         :view :default
-         :show-fps false
-         :fullscreen false
-         :width 1024
-         :height 768 } (:display @config))))
+ (ref (conj {
+       :view :default
+       :show-fps false
+       :fullscreen false
+       :width 1024
+       :height 768 } (:display @config))))
