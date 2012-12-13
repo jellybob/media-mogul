@@ -3,7 +3,8 @@
  [ :require [ media-mogul.library :as library ] ])
 
 (import
- '(org.newdawn.slick Color))
+ '(org.newdawn.slick Color)
+ '(org.newdawn.slick.util Log))
 
 (def text-color (atom (new Color 255 0 0)))
 (def message (atom "Hello world!"))
@@ -18,14 +19,17 @@
   (.setColor graphics (new Color @text-color))
   (.drawString graphics @message (- (.getWidth container) text-width 30) 30)))
 
+(defn- render-series [ name idx graphics container ]
+ (let [ text-height (.getHeight (.getFont graphics) "AbjQ") ]
+  (.drawString graphics
+   name
+   30
+   (+ 30 (* idx (+ 10 text-height))))))
+
 (defn- list-series [ graphics container ]
- (let [ names (library/series-names)
-  indexes (range (count names))
-  text-height (.getHeight (.getFont graphics) "AbjQ") ]
-  (map #(.drawString graphics
-         (nth names %)
-         30
-         (+ 30 (* % text-height))) indexes)))
+ (dotimes
+  [ n (count (library/series-names)) ]
+  (render-series (nth (library/series-names) n) n graphics container)))
 
 (defmethod renderer :main-menu
  [ state container graphics ]
